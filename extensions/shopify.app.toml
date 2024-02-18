@@ -1,0 +1,27 @@
+# Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
+
+name = ""
+client_id = ""
+application_url = "https://ngrok.com"
+embedded = true
+
+[access_scopes]
+# Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
+use_legacy_install_flow = true
+
+[auth]
+redirect_urls = [
+  "https://ngrok.com/api/auth/tokens",
+  "https://ngrok.com/api/auth/callback"
+]
+
+[webhooks]
+api_version = "2024-01"
+
+[app_proxy]
+url = "https://ngrok.com/api/proxy_route"
+subpath = "dynamic-form"
+prefix = "apps"
+
+[pos]
+embedded = false

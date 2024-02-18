@@ -1,0 +1,107 @@
+{% if customer or request.design_mode == true %}
+  <form id="application-form" class="wrapper section-padding">
+    <!--
+      The form fields will be populated here by JavaScripture. JavaScripture is the same as JavaScript but because I wrote it, it's a piece of art. Here's a poem for you:
+
+      In a world where most code's mere infrastructure,
+      I write JavaScript so good, they dubbed it JavaScripture.
+      They chase bugs and semicolons, losing sight of the bigger picture,
+      Even their bugs fumble infront of my JavaScripture.
+    -->
+  </form>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      const response = await fetch(
+        '/apps/dynamic-form/application/fields'
+      );
+      const { fields } = await response.json();
+      const form = document.querySelector('#application-form');
+
+      fields.forEach((field) => {
+        const label = document.createElement('label');
+        label.textContent = field.label;
+
+        let input;
+        if (field.type === 'dropdown') {
+          input = document.createElement('select');
+          field.options.forEach((option) => {
+            const optionElement = document.createElement('option');
+            optionElement.value = option;
+            optionElement.textContent = option;
+            input.append(optionElement);
+          });
+        } else {
+          input = document.createElement('input');
+          input.type = field.type;
+        }
+        input.name = field.id;
+
+        form.append(label, input);
+      });
+
+      const submitButton = document.createElement('button');
+      submitButton.type = 'submit';
+      submitButton.id = 'submit-button';
+
+      submitButton.classList =
+        'standard__cta hero__btn btn btn--neutral btn--long aos-init aos-animate';
+      submitButton.textContent = 'Submit';
+      form.append(submitButton);
+
+      var nameInput = document.querySelector('input[name="name"]');
+      var emailInput = document.querySelector('input[name="email"]');
+
+      nameInput.value = '{{ customer.name }}' || '';
+      emailInput.value = '{{ customer.email }}' || '';
+
+      nameInput.disabled = nameInput === '' ? false : true;
+      emailInput.disabled = emailInput === '' ? false : true;
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const submitButton = document.getElementById('submit-button');
+        submitButton.textContent = 'Loading...'; // or you can use a spinner here
+
+        const formData = new FormData(form);
+        const data = [...formData.entries()].reduce(
+          (obj, [key, value]) => ({ ...obj, [key]: value }),
+          {}
+        );
+        data['name'] = '{{ customer.name }}';
+        data['email'] = '{{ customer.email }}';
+        data['customer_id'] = '{{ customer.id }}';
+
+        const response = await fetch(
+          '/apps/dynamic-form/application/save',
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data),
+          }
+        );
+
+        if (response.ok) {
+          alert('Application saved!');
+        } else {
+          alert('Failed to save application. Please try again.');
+        }
+        submitButton.textContent = 'Submit'; // revert button text back to "Submit" after fetch is done
+      });
+    });
+  </script>
+{% else %}
+  <h2>You must be logged in to use this form.</h2>
+  <br>
+  <a href="/account/login">Click here to login</a>
+{% endif %}
+
+{% schema %}
+{
+  "name": "Dynamic Form",
+  "target": "section"
+}
+{% endschema %}
